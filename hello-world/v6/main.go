@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 const (
-	helloPrefix = "Hell, "
+	helloPrefix = "Hello, "
 )
 
 func Hello(name string) string {
