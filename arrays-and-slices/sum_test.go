@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"reflect"
 	"slices"
 	"testing"
@@ -49,4 +50,64 @@ func TestSumAll(t *testing.T) {
 	if !slices.Equal[[]int](got, want) {
 		t.Errorf("got %v want %v", got, want)
 	}
+}
+
+//func TestSumAllTails(t *testing.T) {
+//
+//	tests := []struct {
+//		Input [][]int
+//		Want  []int
+//	}{
+//		{
+//			Input: [][]int{{1, 2}, {0, 9}},
+//			Want:  []int{2, 9},
+//		},
+//		{
+//			Input: [][]int{{}, {3, 4, 5}},
+//			Want:  []int{0, 9},
+//		},
+//	}
+//
+//	for _, tt := range tests {
+//		got := SumAllTails(tt.Input...)
+//		want := tt.Want
+//
+//		if !slices.Equal[[]int](got, want) {
+//			t.Errorf("got %v want %v", got, want)
+//		}
+//	}
+//}
+
+func TestSumAllTails(t *testing.T) {
+
+	checkSum := func(t *testing.T, got, want []int) {
+		t.Helper()
+		if !slices.Equal[[]int](got, want) {
+			t.Errorf("want %v got %v", want, got)
+		}
+	}
+
+	t.Run("make the sums of some slices", func(t *testing.T) {
+		got := SumAllTails([]int{1, 2}, []int{0, 9})
+		want := []int{2, 9}
+		checkSum(t, got, want)
+	})
+
+	t.Run("safely sum empty slices", func(t *testing.T) {
+		got := SumAllTails([]int{}, []int{3, 4, 9, 5})
+		want := []int{0, 18}
+		checkSum(t, got, want)
+	})
+}
+
+func ExampleSliceLow() {
+	numbers := []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
+	fmt.Println(numbers[1:])
+	// Output: [2 3 4 5 6 7 8 9]
+}
+
+func ExampleSliceHigh() {
+	numbers := []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
+	fmt.Println(numbers[:1])
+	// Output: [1]
 }
