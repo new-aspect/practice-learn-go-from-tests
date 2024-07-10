@@ -1,24 +1,26 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestArea(t *testing.T) {
-
-	checkArea := func(t *testing.T, shape Shape, want float64) {
-		t.Helper()
-		got := shape.Area()
-		if got != want {
-			t.Errorf("got %g want %g", got, want)
-		}
+	areaTest := []struct {
+		name    string
+		shape   Shape
+		hasArea float64
+	}{
+		{name: "Rectangle", shape: Rectangle{Width: 12.0, Height: 7.0}, hasArea: 84.0},
+		{name: "Circle", shape: Circle{Radius: 6.0}, hasArea: 113.09733552923255},
+		{name: "Triangle", shape: Triangle{Width: 12.0, Height: 8.0}, hasArea: 42},
 	}
 
-	t.Run("rectangle", func(t *testing.T) {
-		rectangle := Rectangle{12, 6}
-		checkArea(t, rectangle, 72.0)
-	})
-
-	t.Run("circles", func(t *testing.T) {
-		circle := Circle{10}
-		checkArea(t, circle, 314.1592653589793)
-	})
+	for _, tt := range areaTest {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.shape.Area()
+			if got != tt.hasArea {
+				t.Errorf("got %g want %g", got, tt.hasArea)
+			}
+		})
+	}
 }
