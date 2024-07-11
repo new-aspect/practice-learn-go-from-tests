@@ -12,7 +12,7 @@ func TestArea(t *testing.T) {
 	}{
 		{name: "Rectangle", shape: Rectangle{Width: 12.0, Height: 7.0}, hasArea: 84.0},
 		{name: "Circle", shape: Circle{Radius: 6.0}, hasArea: 113.09733552923255},
-		{name: "Triangle", shape: Triangle{Width: 12.0, Height: 8.0}, hasArea: 42},
+		{name: "Triangle", shape: Triangle{Width: 12.0, Height: 7.0}, hasArea: 42},
 	}
 
 	for _, tt := range areaTest {
