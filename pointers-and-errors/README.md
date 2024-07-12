@@ -199,3 +199,66 @@ wallet_test.go:12: got 10 BTC want 11 BTC
 这使得我们在测试的情况变得更加清楚
 
 下一个要求是Withdraw函数
+
+### 首先先写测试
+
+```go
+func TestWallet(t *testing.T) {
+	t.Run("Deposit", func(t *testing.T) {
+		wallet := Wallet{}
+		wallet.Deposit(Bitcoin(10))
+		got := wallet.Balance()
+		want := Bitcoin(10)
+		if got != want {
+			t.Errorf("got %s want %s", got, want)
+		}
+	})
+
+	t.Run("Withdraw", func(t *testing.T) {
+		wallet := Wallet{balance: Bitcoin(20)}
+
+		wallet.Withdraw(Bitcoin(10))
+
+		got := wallet.Balance()
+		want := Bitcoin(10)
+
+		if got != want {
+			t.Errorf("got %s want %s", got, want)
+		}
+	})
+}
+```
+
+然后报错`got 20 BTC want 10 BTC`, 修复这个报错
+
+```go
+func (w *Wallet) Withdraw(amount Bitcoin) {
+	w.balance -= amount
+}
+```
+
+### 重构
+
+```go
+func TestWallet(t *testing.T) {
+	assetBalance := func(t *testing.T, wallet *Wallet, want Bitcoin) {
+		t.Helper()
+		got := wallet.Balance()
+		if got != want {
+			t.Errorf("got %s want %s", got, want)
+		}
+	}
+
+	t.Run("Deposit", func(t *testing.T) {
+		wallet := Wallet{}
+		wallet.Deposit(Bitcoin(10))
+		assetBalance(t, &wallet, Bitcoin(10))
+	})
+
+	t.Run("Withdraw", func(t *testing.T) {
+		wallet := Wallet{balance: Bitcoin(20)}
+		wallet.Withdraw(Bitcoin(10))
+		assetBalance(t, &wallet, Bitcoin(20))
+	})
+}
+```
