@@ -125,3 +125,77 @@ func (w *Wallet) Deposit(amount int) {
 
 这样，当你调用wallet.Deposit(10)时，原始对象`balance`会被正确修改，你的测试也会通过
 
+
+### 重构
+
+我们制作bit钱包，为了计算bit钱包写一个结构体有些矫枉过正，int就其工作方式很好，他是可描述的
+
+Go允许你创建新的类型，语法是 type MyName OriginalType
+
+```go
+type Bitcoin int
+
+type Wallet struct {
+    balance Bitcoin
+}
+
+func (w *Wallet) Deposit(amount Bitcoin) {
+    w.balance += amount
+}
+
+func (w *Wallet) Balance() Bitcoin {
+    return w.balance
+}
+```
+```go
+func TestWallet(t *testing.T) {
+
+	wallet := Wallet{}
+
+	wallet.Deposit(Bitcoin(10))
+
+	got := wallet.Balance()
+
+	want := Bitcoin(10)
+
+	if got != want {
+		t.Errorf("got %d want %d", got, want)
+	}
+}
+```
+要创建Bitcoin你只需要语法Bitcoin(999)
+
+这样做，我们创建了一个新的类型，并且可以在它们上面申明方法，当你在类型上想实现一些特定域的功能
+会变得非常有用
+
+```go
+type Stringer interface {
+	String() string
+}
+```
+
+词接口在fmt包里面定义，可以让你打印与%s字符时使用类型
+```go
+func (b Bitcoin) String() string {
+	return fmt.Sprintf("%d BTC", b)
+}
+```
+
+就如你看到的，在类型上申明创建方法的语法与在结构上创建方法的语法相同
+
+我们将测试新的字符串，他们将会被String()代替
+
+```go
+if got != want {
+	t.Errorf("got %s want %s",got, want)
+}
+```
+
+他的实际效果是
+```
+wallet_test.go:12: got 10 BTC want 11 BTC
+```
+
+这使得我们在测试的情况变得更加清楚
+
+下一个要求是Withdraw函数
