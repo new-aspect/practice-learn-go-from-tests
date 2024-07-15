@@ -262,3 +262,60 @@ func TestWallet(t *testing.T) {
 	})
 }
 ```
+
+如果你尝试Withdraw超过账户中的剩余余额，会发生什么情况，目前，我们的情况是假设没有透支情况
+
+使用 Withdraw时如何发出问题信号
+
+在Go语言，通常函数返回err提供调用者检查并才去行动
+
+然我们在测试中尝试一下
+
+### 先写测试
+
+```go
+    t.Run("withdraw insufficient funds", func(t *testing.T) {
+		startingBalance := Bitcoin(20)
+		wallet := Wallet{startingBalance}
+		err := wallet.Withdraw(Bitcoin(100))
+		assetBalance(t, &wallet, startingBalance)
+
+		if err == nil {
+			t.Errorf("wanted an err but not didn't get one")
+		}
+	})
+```
+
+```go
+func (w *Wallet) Withdraw(amount Bitcoin) error {
+	if amount > w.balance {
+		return errors.New("oh no")
+	}
+
+	w.balance -= amount
+	return nil
+}
+```
+
+### 重构
+
+我们为错误检查创建一个快速测试助手，以提高测试可读性
+
+```go
+
+	assetError := func(t testing.TB, err error) {
+		t.Helper()
+		if err == nil {
+			t.Error("wanted an err but not didn't get one")
+		}
+	}
+
+	t.Run("withdraw insufficient funds", func(t *testing.T) {
+        startingBalance := Bitcoin(20)
+        wallet := Wallet{startingBalance}
+        err := wallet.Withdraw(Bitcoin(100))
+    
+        assetBalance(t, &wallet, startingBalance)
+        assetError(t, err)
+	})
+```
