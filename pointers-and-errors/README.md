@@ -319,3 +319,124 @@ func (w *Wallet) Withdraw(amount Bitcoin) error {
         assetError(t, err)
 	})
 ```
+
+我们希望返回给用户的错误信息不是`oh no`, 而是有更详细的错误信息，所以我们先写一个测试
+```go
+    	assertError := func(t *testing.T, got error, want string) {
+            t.Helper()
+            if got == nil {
+                t.Fatalf("did get any error but wanted ont")
+            }
+            if got.Error() != want {
+                t.Fatalf("got %v want %v", got, want)
+            }
+        }
+
+	t.Run("Withdraw out of money", func(t *testing.T) {
+		wallet := Wallet{balance: 20}
+		err := wallet.Withdraw(100)
+		assertError(t, err, "cannot withdraw, insufficient funds")
+	})
+```
+
+然后运行测试，
+```
+wallet_test.go:61: got err 'oh no' want 'cannot withdraw, insufficient funds'
+```
+编写足够的代码让测试通过
+```go
+func (w *Wallet) Withdraw(mount int) error {
+	if mount > w.balance {
+		return fmt.Errorf("cannot withdraw, insufficient funds")
+	}
+
+	w.balance -= mount
+	return nil
+}
+```
+
+### 重构
+我们在测试代码和Withdraw里面都有很多错误信息
+
+如果有人想要重新吧表达错误，并且对于我们的测试来说细节太多了，那么测试失败会非常烦人。
+我们并不关心错误的措辞是什么，只是在给定特定条件下返回某种有意义有关撤回的错误
+
+在Go中，错误就是值，因此我们可以将其重构为一个变量，并为期提供单一的事实来源
+```go
+var ErrSufficientFunds = errors.New("cannot withdraw, insufficient funds")
+
+func (w *Wallet) Withdraw(mount int) error {
+    if mount > w.balance {
+        return ErrSufficientFunds
+    }
+    
+    w.balance -= mount
+    return nil
+}
+```
+
+然后我们可以重构测试以使用该值而不是字符串
+```go
+    assertError := func(t *testing.T, got error, want error) {
+        t.Helper()
+        if got == nil {
+            t.Fatalf("did get any error but wanted ont")
+        }
+        if got != want {
+            t.Fatalf("got %v want %v", got, want)
+        }
+    }
+
+	t.Run("Withdraw out of money", func(t *testing.T) {
+		wallet := Wallet{balance: 20}
+		err := wallet.Withdraw(100)
+		assertError(t, err, ErrSufficientFunds)
+	})
+```
+
+然后我们把assert移除主要测试函数，这样有人打开文件时，它们可以首先阅读我们的断言，而不是
+某些assert
+
+测试的另一个有用的特性是他们可以帮助我们；理解代码的实际用法，这样我们可以编写出令人满意的代码
+开发人员可以很简单的调用哦我们的方法并对ErrInsufficientFunds 进行检查并采取相应的操作
+```go
+func TestWallet(t *testing.T) {
+	t.Run("Deposit", func(t *testing.T) {
+		wallet := Wallet{}
+		wallet.Deposit(10)
+		assertBalance(t, &wallet, 10)
+	})
+
+	t.Run("Withdraw", func(t *testing.T) {
+		wallet := Wallet{balance: 50}
+		wallet.Withdraw(20)
+		assertBalance(t, &wallet, 30)
+	})
+
+	t.Run("Withdraw out of money", func(t *testing.T) {
+		wallet := Wallet{balance: 20}
+		err := wallet.Withdraw(100)
+		assertError(t, err, ErrSufficientFunds)
+	})
+}
+
+func assertBalance(t *testing.T, wallet *Wallet, want int) {
+	t.Helper()
+	got := wallet.Balance()
+	if got != want {
+		t.Errorf("want %v, but got %v", want, got)
+	}
+}
+
+func assertError (t *testing.T, got error, want error) {
+	t.Helper()
+	if got == nil {
+		t.Fatalf("did get any error but wanted ont")
+	}
+	if got != want {
+		t.Fatalf("got %v want %v", got, want)
+	}
+}
+```
+
+我们还要检查一些漏掉的错误错误
