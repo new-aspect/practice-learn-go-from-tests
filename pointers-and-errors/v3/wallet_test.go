@@ -13,7 +13,8 @@ func TestWallet(t *testing.T) {
 
 	t.Run("Withdraw", func(t *testing.T) {
 		wallet := Wallet{balance: 50}
-		wallet.Withdraw(20)
+		err := wallet.Withdraw(20)
+		assertNoError(t, err)
 		assertBalance(t, &wallet, 30)
 	})
 

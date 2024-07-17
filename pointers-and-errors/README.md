@@ -440,3 +440,18 @@ func assertError (t *testing.T, got error, want error) {
 ```
 
 我们还要检查一些漏掉的错误错误
+```go
+func assertNoError(t *testing.T, got error) {
+	t.Helper()
+	if got != nil {
+		t.Errorf("don't want get err : %v", got)
+	}
+}
+
+t.Run("Withdraw", func(t *testing.T) {
+wallet := Wallet{balance: 50}
+err := wallet.Withdraw(20)
+assertNoError(t, err)
+assertBalance(t, &wallet, 30)
+})
+```
