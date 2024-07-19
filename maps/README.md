@@ -43,3 +43,37 @@ func assertString(t *testing.T, got, want string) {
 ### 使用自定义类型
 我们可以围绕map创建一个新的类型，并用Search成为一个新的字典方法
 
+### 先写测试
+我们有一个很好的办法搜索字典，但是，我们无法向字典添加新单词
+
+```go
+func TestAdd(t *testing.T) {
+    directory := Directory{}
+    directory.Add("test", "this is a simple test")
+    got := directory.Search("test")
+    assertString(t, got, "this is a simple test")
+}
+```
+
+实现Add
+
+```go
+func (d Directory) Add(work, content string) {
+	d[work] = content
+}
+```
+
+### 指针, 副本
+map的有趣属性是你可以修改他们而不需要将其地址传递（例如&myMap）
+
+地图的一个问题是它可以是nil值，nil值在阅读时类似空映射，但尝试写入nil值会造成恐慌
+因此，你永远都不应该初始化nil变量为map
+```go
+var m map[string]string
+```
+相反，你可以初始化一个空地图或使用make关键创造map
+```go
+var directory = map[string]string{}
+// OR
+var directory = make(map[string]string)
+```
