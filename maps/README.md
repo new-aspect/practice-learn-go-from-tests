@@ -39,3 +39,7 @@ func assertString(t *testing.T, got, want string) {
 }
 
 ```
+
+### 使用自定义类型
+我们可以围绕map创建一个新的类型，并用Search成为一个新的字典方法
+
