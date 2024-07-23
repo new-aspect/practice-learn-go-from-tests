@@ -77,3 +77,59 @@ var directory = map[string]string{}
 // OR
 var directory = make(map[string]string)
 ```
+
+### 重构
+将这个里面的字符串以变量的名称命名
+```go
+func TestAdd(t *testing.T) {
+	dictionary := Dictionary{}
+	dictionary.Add("test", "this is a test")
+	got := dictionary["test"]
+	want := "this is a test"
+	if want != got {
+		t.Errorf("got %v want %v", got, want)
+	}
+}
+
+func TestSearch(t *testing.T) {
+	dictionary := Dictionary{}
+	dictionary.Add("test", "this is a test")
+	got := dictionary.Search("test")
+	want := "this is a test"
+	if got != want {
+		t.Errorf("got %v want %v", got, want)
+	}
+}
+```
+
+将检查部分逻辑
+```go
+func TestAdd(t *testing.T) {
+	dictionary := Dictionary{}
+	word := "test"
+	definition := "this is a test"
+
+	dictionary.Add("test", "this is a test")
+
+	assertDefinition(t, dictionary, word, definition)
+}
+
+func assertDefinition(t *testing.T, dictionary Dictionary, word, definition string) {
+	t.Helper()
+	got, err := dictionary.Search(word)
+	if err != nil {
+		t.Fatal("should find add word: ", err)
+	}
+	assertString(t, got, definition)
+}
+
+func assertString(t *testing.T, got, want string) {
+	t.Helper()
+	if got != want {
+		t.Errorf("got %v want %v", got, want)
+	}
+}
+```
+我们为单词定义创建了变量，并将定义断言移转至自己的辅助函数
+
+我们的Add函数看起来不错，但是我们没有考虑添加已经存在的值会发生什么
