@@ -133,3 +133,67 @@ func assertString(t *testing.T, got, want string) {
 我们为单词定义创建了变量，并将定义断言移转至自己的辅助函数
 
 我们的Add函数看起来不错，但是我们没有考虑添加已经存在的值会发生什么
+
+如果值已经存在，Map不会抛出错误，相反，他们会用继续并用新提供的值覆盖该值，这在实践中很方便，
+但是我们的函数名称并不准确，Add不应该修改现有的值。他应该只向我们的词典添加新的单词
+
+### 先写测试
+```go
+func TestAdd(t *testing.T) {
+	t.Run("new word", func(t *testing.T) {
+		dictionary := Dictionary{}
+		word := "test"
+		definition := "this is a test"
+
+		dictionary.Add("test", "this is a test")
+
+		assertDefinition(t, dictionary, word, definition)
+	})
+
+	t.Run("existing word", func(t *testing.T) {
+		word := "test"
+		definition := "this is just a test"
+		dictionary := Dictionary{word: definition}
+		err := dictionary.Add(word, "new test")
+
+		assertError(t, err, ErrWordExist)
+	})
+}
+```
+
+实现方式
+```go
+var ErrWordExist = errors.New("error: already have exist word")
+var ErrNotFound = errors.New("could not find the word you are look for")
+
+type Dictionary map[string]string
+
+func (d Dictionary) Add(key, content string) error {
+	_, err := d.Search(key)
+
+	switch err {
+	case ErrNotFound:
+		d[key] = content
+	case nil:
+		return ErrWordExist
+	default:
+		return err
+	}
+
+	return nil
+}
+
+func (d Dictionary) Search(key string) (string, error) {
+	content, ok := d[key]
+	if !ok {
+		return "", ErrNotFound
+	}
+
+	return content, nil
+}
+```
+
+### 重构
+```go
+
+```
