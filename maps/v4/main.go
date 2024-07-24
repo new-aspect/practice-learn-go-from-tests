@@ -2,6 +2,7 @@ package main
 
 const ErrWordExist = DictionaryErr("error: already have exist word")
 const ErrNotFound = DictionaryErr("could not find the word you are look for")
+const ErrWordDoseNotExist = DictionaryErr("error: world dose not exits")
 
 type DictionaryErr string
 
@@ -33,4 +34,17 @@ func (d Dictionary) Search(key string) (string, error) {
 	}
 
 	return content, nil
+}
+
+func (d Dictionary) Update(key, content string) error {
+	_, err := d.Search(key)
+	switch err {
+	case ErrNotFound:
+		return ErrWordDoseNotExist
+	case nil:
+		d[key] = content
+	default:
+		return err
+	}
+	return nil
 }

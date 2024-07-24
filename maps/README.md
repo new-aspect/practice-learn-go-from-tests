@@ -193,7 +193,28 @@ func (d Dictionary) Search(key string) (string, error) {
 }
 ```
 
-### 重构
+### Update
 ```go
+func TestUpdate(t *testing.T) {
+	t.Run("existing word", func(t *testing.T) {
+		word := "test"
+		definition := "this is just a test"
+		dictionary := Dictionary{word: definition}
+		newDefinition := "new definition"
 
+		err := dictionary.Update(word, newDefinition)
+		assertError(t, err, nil)
+		assertDefinition(t, dictionary, word, newDefinition)
+	})
+
+	t.Run("new word", func(t *testing.T) {
+		word := "test"
+		definition := "this is just a test"
+		dictionary := Dictionary{}
+		err := dictionary.Update(word, definition)
+		assertError(t, err, ErrWordDoseNotExist)
+	})
+}
 ```
+我发现当我写了Update的测试，遇到比较晕的逻辑的错误，也是被检查出来了，而且代码的复用变得很高了
+就是这个思路确实不好转换
